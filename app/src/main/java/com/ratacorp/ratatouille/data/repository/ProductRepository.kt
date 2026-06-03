@@ -2,11 +2,9 @@ package com.ratacorp.ratatouille.data.repository
 
 import com.ratacorp.ratatouille.data.local.ProductDao
 import com.ratacorp.ratatouille.data.model.Product
-import com.ratacorp.ratatouille.data.model.ProductResponse
 import com.ratacorp.ratatouille.data.model.toDomainProduct
 import com.ratacorp.ratatouille.data.model.toEntity
 import com.ratacorp.ratatouille.data.remote.FoodApiService
-
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -39,36 +37,35 @@ class ProductRepository(
             Result.failure(e)
         }
     }
-fun getAllProducts(): Flow<List<Product>> {
-    return productDao.getAllProducts().map { entities ->
-        entities.map { it.toDomainProduct() }
-    }
-}
 
-suspend fun getBetterAlternative(product: Product): Product? {
-    val currentGrade = product.nutritionGrades?.lowercase()
-    if (currentGrade != "d" && currentGrade != "e") return null
-
-    val category = product.categoriesTags?.lastOrNull() ?: return null
-
-    // On cherche d'abord un produit noté A
-    val gradesToTry = listOf("a", "b", "c")
-    for (grade in gradesToTry) {
-        try {
-            val response = apiService.searchProducts(category = category, targetGrade = grade)
-            if (response.products.isNotEmpty()) {
-                return response.products.first()
-            }
-        } catch (e: Exception) {
-            // Continuer vers le grade suivant en cas d'erreur
+    fun getAllProducts(): Flow<List<Product>> {
+        return productDao.getAllProducts().map { entities ->
+            entities.map { it.toDomainProduct() }
         }
     }
-    return null
-}
 
-suspend fun deleteProduct(product: Product) {
-...
+    suspend fun getBetterAlternative(product: Product): Product? {
+        val currentGrade = product.nutritionGrades?.lowercase()
+        if (currentGrade != "d" && currentGrade != "e") return null
 
+        val category = product.categoriesTags?.lastOrNull() ?: return null
+
+        // On cherche d'abord un produit noté A, puis B, puis C
+        val gradesToTry = listOf("a", "b", "c")
+        for (grade in gradesToTry) {
+            try {
+                val response = apiService.searchProducts(category = category, targetGrade = grade)
+                if (response.products.isNotEmpty()) {
+                    return response.products.first()
+                }
+            } catch (e: Exception) {
+                // Continuer vers le grade suivant en cas d'erreur réseau
+            }
+        }
+        return null
+    }
+
+    suspend fun deleteProduct(product: Product) {
         productDao.deleteProduct(product.toEntity())
     }
 }
