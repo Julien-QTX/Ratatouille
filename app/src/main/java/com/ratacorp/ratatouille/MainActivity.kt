@@ -27,6 +27,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.ratacorp.ratatouille.ui.ViewModelFactory
+import com.ratacorp.ratatouille.ui.history.HistoryScreen
+import com.ratacorp.ratatouille.ui.history.HistoryViewModel
 import com.ratacorp.ratatouille.ui.scan.ScanScreen
 import com.ratacorp.ratatouille.ui.scan.ScanViewModel
 import com.ratacorp.ratatouille.ui.theme.RatatouilleTheme

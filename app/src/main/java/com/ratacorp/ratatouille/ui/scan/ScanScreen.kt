@@ -104,14 +104,17 @@ fun ScanScreen(viewModel: ScanViewModel) {
 
         // Bouton pour basculer en manuel (en haut à droite)
         if (!showManualEntry) {
-            IconButton(
+            Button(
                 onClick = { showManualEntry = true },
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(top = 32.dp, end = 16.dp)
-                    .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                    .padding(top = 32.dp, end = 16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Black.copy(alpha = 0.6f)),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
             ) {
-                Text("⌨", color = Color.White) // Remplacer par une icône clavier si possible
+                Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Saisir un code", fontSize = 14.sp)
             }
         }
 

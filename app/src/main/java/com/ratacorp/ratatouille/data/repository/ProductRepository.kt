@@ -7,6 +7,9 @@ import com.ratacorp.ratatouille.data.model.toDomainProduct
 import com.ratacorp.ratatouille.data.model.toEntity
 import com.ratacorp.ratatouille.data.remote.FoodApiService
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+
 class ProductRepository(
     private val apiService: FoodApiService,
     private val productDao: ProductDao
@@ -16,7 +19,10 @@ class ProductRepository(
             // 1. Vérifier en local
             val localProduct = productDao.getProductByBarcode(barcode)
             if (localProduct != null) {
-                return Result.success(localProduct.toDomainProduct())
+                // Mettre à jour la date de scan pour le faire remonter en tête de liste
+                val updatedProduct = localProduct.toDomainProduct()
+                productDao.insertProduct(updatedProduct.toEntity())
+                return Result.success(updatedProduct)
             }
 
             // 2. Si non trouvé en local, télécharger depuis l'API
@@ -31,6 +37,12 @@ class ProductRepository(
             }
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    fun getAllProducts(): Flow<List<Product>> {
+        return productDao.getAllProducts().map { entities ->
+            entities.map { it.toDomainProduct() }
         }
     }
 }
