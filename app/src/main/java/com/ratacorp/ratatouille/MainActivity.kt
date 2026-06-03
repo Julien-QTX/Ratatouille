@@ -91,7 +91,6 @@ class MainActivity : ComponentActivity() {
                             val historyViewModel: HistoryViewModel = viewModel(factory = viewModelFactory)
                             HistoryScreen(
                                 viewModel = historyViewModel, 
-                                repository = appContainer.productRepository,
                                 onAddProduct = { navController.navigate(Screen.Scan.route) }
                             ) 
                         }
