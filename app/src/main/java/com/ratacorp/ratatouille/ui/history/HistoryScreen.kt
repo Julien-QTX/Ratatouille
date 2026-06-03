@@ -24,8 +24,14 @@ import com.ratacorp.ratatouille.data.model.Product
 import com.ratacorp.ratatouille.ui.scan.NutriScoreBadge
 import com.ratacorp.ratatouille.ui.scan.ProductCard
 
+import androidx.compose.material.icons.filled.Add
+
 @Composable
-fun HistoryScreen(viewModel: HistoryViewModel, repository: com.ratacorp.ratatouille.data.repository.ProductRepository) {
+fun HistoryScreen(
+    viewModel: HistoryViewModel, 
+    repository: com.ratacorp.ratatouille.data.repository.ProductRepository,
+    onAddProduct: () -> Unit
+) {
     val history by viewModel.historyState.collectAsState()
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
     var alternative by remember { mutableStateOf<Product?>(null) }
@@ -37,7 +43,16 @@ fun HistoryScreen(viewModel: HistoryViewModel, repository: com.ratacorp.ratatoui
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Scaffold(
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = onAddProduct,
+                icon = { Icon(Icons.Default.Add, contentDescription = null) },
+                text = { Text("Ajouter un produit") },
+            )
+        }
+    ) { innerPadding ->
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
         // ... (rest of the history list UI)
         if (history.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
