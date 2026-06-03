@@ -1,5 +1,6 @@
 package com.ratacorp.ratatouille.data.remote
 
+import com.ratacorp.ratatouille.data.model.ProductResponse
 import com.ratacorp.ratatouille.data.model.SearchResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
