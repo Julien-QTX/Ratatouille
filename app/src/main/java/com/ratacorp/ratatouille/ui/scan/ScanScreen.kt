@@ -50,24 +50,68 @@ fun ScanScreen(viewModel: ScanViewModel) {
         }
     }
 
+    var showManualEntry by remember { mutableStateOf(false) }
+    var manualBarcode by remember { mutableStateOf("") }
+
     Box(modifier = Modifier.fillMaxSize()) {
-        if (hasCameraPermission) {
+        if (hasCameraPermission && !showManualEntry) {
             CameraPreview(onBarcodeDetected = { barcode ->
                 // Éviter les scans multiples trop rapides
                 if (uiState !is ScanState.Loading && uiState !is ScanState.Success) {
                     viewModel.scanProduct(barcode)
                 }
             })
-        } else {
+        } else if (showManualEntry) {
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Permission caméra requise pour scanner")
-                Button(onClick = { launcher.launch(Manifest.permission.CAMERA) }) {
-                    Text("Autoriser")
+                Text(
+                    "Saisie manuelle",
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                OutlinedTextField(
+                    value = manualBarcode,
+                    onValueChange = { manualBarcode = it },
+                    label = { Text("Code-barres") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { 
+                        if (manualBarcode.isNotBlank()) {
+                            viewModel.scanProduct(manualBarcode)
+                            showManualEntry = false
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Rechercher le produit")
                 }
+                TextButton(onClick = { showManualEntry = false }) {
+                    Text("Retour au scanner")
+                }
+            }
+        } else {
+            // ... (permission column stays the same)
+        }
+
+        // Bouton pour basculer en manuel (en haut à droite)
+        if (!showManualEntry) {
+            IconButton(
+                onClick = { showManualEntry = true },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 32.dp, end = 16.dp)
+                    .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+            ) {
+                Text("⌨", color = Color.White) // Remplacer par une icône clavier si possible
             }
         }
 
