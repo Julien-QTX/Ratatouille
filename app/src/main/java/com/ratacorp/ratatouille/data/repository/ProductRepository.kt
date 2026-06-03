@@ -45,4 +45,8 @@ class ProductRepository(
             entities.map { it.toDomainProduct() }
         }
     }
+
+    suspend fun deleteProduct(product: Product) {
+        productDao.deleteProduct(product.toEntity())
+    }
 }

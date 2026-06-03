@@ -87,7 +87,10 @@ class MainActivity : ComponentActivity() {
                         startDestination = Screen.History.route,
                         modifier = Modifier.padding(innerPadding)
                     ) {
-                        composable(Screen.History.route) { HistoryScreen() }
+                        composable(Screen.History.route) { 
+                            val historyViewModel: HistoryViewModel = viewModel(factory = viewModelFactory)
+                            HistoryScreen(historyViewModel) 
+                        }
                         composable(Screen.Scan.route) { 
                             val scanViewModel: ScanViewModel = viewModel(factory = viewModelFactory)
                             ScanScreen(scanViewModel) 
@@ -99,11 +102,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
-
-@Composable
-fun HistoryScreen() {
-    Text(text = "Écran Historique (Home)")
 }
 
 @Composable

@@ -8,7 +8,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 
-class HistoryViewModel(repository: ProductRepository) : ViewModel() {
+import kotlinx.coroutines.launch
+
+class HistoryViewModel(private val repository: ProductRepository) : ViewModel() {
 
     val historyState: StateFlow<List<Product>> = repository.getAllProducts()
         .stateIn(
@@ -16,4 +18,10 @@ class HistoryViewModel(repository: ProductRepository) : ViewModel() {
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    fun deleteProduct(product: Product) {
+        viewModelScope.launch {
+            repository.deleteProduct(product)
+        }
+    }
 }

@@ -1,11 +1,14 @@
 package com.ratacorp.ratatouille.ui.history
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -45,7 +48,11 @@ fun HistoryScreen(viewModel: HistoryViewModel) {
                     )
                 }
                 items(history) { product ->
-                    HistoryItem(product = product, onClick = { selectedProduct = product })
+                    HistoryItem(
+                        product = product, 
+                        onClick = { selectedProduct = product },
+                        onDelete = { viewModel.deleteProduct(product) }
+                    )
                 }
             }
         }
@@ -70,7 +77,7 @@ fun HistoryScreen(viewModel: HistoryViewModel) {
 }
 
 @Composable
-fun HistoryItem(product: Product, onClick: () -> Unit) {
+fun HistoryItem(product: Product, onClick: () -> Unit, onDelete: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -107,6 +114,14 @@ fun HistoryItem(product: Product, onClick: () -> Unit) {
                 )
             }
             NutriScoreBadge(product.nutritionGrades)
+            
+            IconButton(onClick = onDelete) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Supprimer",
+                    tint = Color.Gray
+                )
+            }
         }
     }
 }
