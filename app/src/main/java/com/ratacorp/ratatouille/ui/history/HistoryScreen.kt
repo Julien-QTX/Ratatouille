@@ -25,11 +25,20 @@ import com.ratacorp.ratatouille.ui.scan.NutriScoreBadge
 import com.ratacorp.ratatouille.ui.scan.ProductCard
 
 @Composable
-fun HistoryScreen(viewModel: HistoryViewModel) {
+fun HistoryScreen(viewModel: HistoryViewModel, repository: com.ratacorp.ratatouille.data.repository.ProductRepository) {
     val history by viewModel.historyState.collectAsState()
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
+    var alternative by remember { mutableStateOf<Product?>(null) }
+
+    LaunchedEffect(selectedProduct) {
+        alternative = null
+        selectedProduct?.let { product ->
+            alternative = repository.getBetterAlternative(product)
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
+        // ... (rest of the history list UI)
         if (history.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text("Aucun produit scanné pour le moment")
@@ -69,6 +78,7 @@ fun HistoryScreen(viewModel: HistoryViewModel) {
             ) {
                 ProductCard(
                     product = product,
+                    betterAlternative = alternative,
                     onClose = { selectedProduct = null }
                 )
             }

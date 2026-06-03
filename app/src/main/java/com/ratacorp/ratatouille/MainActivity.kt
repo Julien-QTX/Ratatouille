@@ -89,7 +89,7 @@ class MainActivity : ComponentActivity() {
                     ) {
                         composable(Screen.History.route) { 
                             val historyViewModel: HistoryViewModel = viewModel(factory = viewModelFactory)
-                            HistoryScreen(historyViewModel) 
+                            HistoryScreen(historyViewModel, appContainer.productRepository) 
                         }
                         composable(Screen.Scan.route) { 
                             val scanViewModel: ScanViewModel = viewModel(factory = viewModelFactory)

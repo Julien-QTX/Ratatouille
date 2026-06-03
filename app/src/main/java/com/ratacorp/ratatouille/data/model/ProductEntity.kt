@@ -10,6 +10,7 @@ data class ProductEntity(
     val brands: String?,
     val nutritionGrades: String?,
     val imageUrl: String?,
+    val categoriesTags: String?, // Stocké sous forme de chaîne séparée par des virgules
     val scanDate: Long
 )
 
@@ -19,7 +20,8 @@ fun ProductEntity.toDomainProduct(): Product {
         productName = productName,
         brands = brands,
         nutritionGrades = nutritionGrades,
-        imageUrl = imageUrl
+        imageUrl = imageUrl,
+        categoriesTags = categoriesTags?.split(",")
     )
 }
 
@@ -30,6 +32,7 @@ fun Product.toEntity(): ProductEntity {
         brands = brands,
         nutritionGrades = nutritionGrades,
         imageUrl = imageUrl,
+        categoriesTags = categoriesTags?.joinToString(","),
         scanDate = System.currentTimeMillis()
     )
 }

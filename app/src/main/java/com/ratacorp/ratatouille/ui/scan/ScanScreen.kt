@@ -132,6 +132,7 @@ fun ScanScreen(viewModel: ScanViewModel) {
                 is ScanState.Success -> {
                     ProductCard(
                         product = state.product,
+                        betterAlternative = state.betterAlternative,
                         onClose = { viewModel.resetState() }
                     )
                 }
@@ -167,7 +168,11 @@ fun ScanScreen(viewModel: ScanViewModel) {
 }
 
 @Composable
-fun ProductCard(product: Product, onClose: () -> Unit) {
+fun ProductCard(
+    product: Product, 
+    betterAlternative: Product? = null,
+    onClose: () -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
@@ -217,6 +222,40 @@ fun ProductCard(product: Product, onClose: () -> Unit) {
                     Text("Nutri-Score", fontWeight = FontWeight.Medium)
                     Spacer(modifier = Modifier.height(4.dp))
                     NutriScoreBadge(product.nutritionGrades)
+                }
+            }
+
+            // Bandeau "Meilleure alternative"
+            betterAlternative?.let { alt ->
+                Spacer(modifier = Modifier.height(16.dp))
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Column(modifier = Modifier.padding(8.dp)) {
+                        Text(
+                            text = "Meilleure alternative",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = alt.productName ?: "Produit inconnu",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            NutriScoreBadge(alt.nutritionGrades)
+                        }
+                    }
                 }
             }
         }
