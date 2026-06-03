@@ -47,6 +47,7 @@ fun ScanScreen(viewModel: ScanViewModel) {
     )
 
     LaunchedEffect(Unit) {
+        viewModel.resetState()
         if (!hasCameraPermission) {
             launcher.launch(Manifest.permission.CAMERA)
         }
@@ -155,7 +156,7 @@ fun ScanScreen(viewModel: ScanViewModel) {
                 is ScanState.Idle -> {
                     // Optionnel : petit guide de scan
                     Text(
-                        "Placez un code-barres dans le cadre",
+                        "Placez un code-barres devant l'appareil photo",
                         modifier = Modifier
                             .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
                             .padding(8.dp),

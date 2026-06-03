@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -28,77 +29,69 @@ import com.ratacorp.ratatouille.ui.scan.ProductCard
 @Composable
 fun HistoryScreen(
     viewModel: HistoryViewModel,
-    repository: com.ratacorp.ratatouille.data.repository.ProductRepository,
     onAddProduct: () -> Unit
 ) {
     val history by viewModel.historyState.collectAsState()
-    var selectedProduct by remember { mutableStateOf<Product?>(null) }
-    var alternative by remember { mutableStateOf<Product?>(null) }
+    val selectedProduct by viewModel.selectedProduct.collectAsState()
+    val alternative by viewModel.alternative.collectAsState()
 
-    LaunchedEffect(selectedProduct) {
-        alternative = null
-        selectedProduct?.let { product ->
-            alternative = repository.getBetterAlternative(product)
-        }
-    }
-
-    Scaffold(
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = onAddProduct,
-                icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                text = { Text("Ajouter un produit") },
-            )
-        }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            if (history.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Aucun produit scanné pour le moment")
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    item {
-                        Text(
-                            "Historique des scans",
-                            style = MaterialTheme.typography.headlineMedium,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
-                    }
-                    items(history) { product ->
-                        HistoryItem(
-                            product = product,
-                            onClick = { selectedProduct = product },
-                            onDelete = { viewModel.deleteProduct(product) }
-                        )
-                    }
-                }
+    // Utilisation d'un Box au lieu d'un Scaffold interne pour éviter les conflits de rendu (NaN error)
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (history.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Aucun produit scanné pour le moment")
             }
-
-            // Overlay pour afficher la fiche produit quand on clique sur un item
-            selectedProduct?.let { product ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.5f))
-                        .clickable { selectedProduct = null }
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    ProductCard(
-                        product = product,
-                        betterAlternative = alternative,
-                        onClose = { selectedProduct = null }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                item {
+                    Text(
+                        "Historique des scans",
+                        style = MaterialTheme.typography.headlineMedium,
+                        modifier = Modifier.padding(bottom = 16.dp)
                     )
                 }
+                items(history) { product ->
+                    HistoryItem(
+                        product = product,
+                        onClick = { viewModel.selectProduct(product) },
+                        onDelete = { viewModel.deleteProduct(product) }
+                    )
+                }
+            }
+        }
+
+        // Floating Action Button manuel pour éviter l'imbrication de Scaffold
+        LargeFloatingActionButton(
+            onClick = onAddProduct,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            shape = CircleShape
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Ajouter", modifier = Modifier.size(36.dp))
+        }
+
+        // Overlay pour afficher la fiche produit quand on clique sur un item
+        selectedProduct?.let { product ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .clickable { viewModel.selectProduct(null) }
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                ProductCard(
+                    product = product,
+                    betterAlternative = alternative,
+                    onClose = { viewModel.selectProduct(null) }
+                )
             }
         }
     }
