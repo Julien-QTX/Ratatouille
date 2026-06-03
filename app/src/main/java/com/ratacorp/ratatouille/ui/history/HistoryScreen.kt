@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,11 +25,9 @@ import com.ratacorp.ratatouille.data.model.Product
 import com.ratacorp.ratatouille.ui.scan.NutriScoreBadge
 import com.ratacorp.ratatouille.ui.scan.ProductCard
 
-import androidx.compose.material.icons.filled.Add
-
 @Composable
 fun HistoryScreen(
-    viewModel: HistoryViewModel, 
+    viewModel: HistoryViewModel,
     repository: com.ratacorp.ratatouille.data.repository.ProductRepository,
     onAddProduct: () -> Unit
 ) {
@@ -52,50 +51,54 @@ fun HistoryScreen(
             )
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-        // ... (rest of the history list UI)
-        if (history.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Aucun produit scanné pour le moment")
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                item {
-                    Text(
-                        "Historique des scans",
-                        style = MaterialTheme.typography.headlineMedium,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            if (history.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Aucun produit scanné pour le moment")
                 }
-                items(history) { product ->
-                    HistoryItem(
-                        product = product, 
-                        onClick = { selectedProduct = product },
-                        onDelete = { viewModel.deleteProduct(product) }
-                    )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    item {
+                        Text(
+                            "Historique des scans",
+                            style = MaterialTheme.typography.headlineMedium,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                    }
+                    items(history) { product ->
+                        HistoryItem(
+                            product = product,
+                            onClick = { selectedProduct = product },
+                            onDelete = { viewModel.deleteProduct(product) }
+                        )
+                    }
                 }
             }
-        }
 
-        // Overlay pour afficher la fiche produit quand on clique sur un item
-        selectedProduct?.let { product ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f))
-                    .clickable { selectedProduct = null }
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                ProductCard(
-                    product = product,
-                    betterAlternative = alternative,
-                    onClose = { selectedProduct = null }
-                )
+            // Overlay pour afficher la fiche produit quand on clique sur un item
+            selectedProduct?.let { product ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.5f))
+                        .clickable { selectedProduct = null }
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    ProductCard(
+                        product = product,
+                        betterAlternative = alternative,
+                        onClose = { selectedProduct = null }
+                    )
+                }
             }
         }
     }
