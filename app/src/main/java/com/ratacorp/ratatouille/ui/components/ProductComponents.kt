@@ -106,12 +106,6 @@ fun ProductCard(
                         Text("Nutri-Score", style = MaterialTheme.typography.labelSmall)
                         NutriScoreBadge(product.nutritionGrades)
                     }
-                    product.novaGroup?.let {
-                        Column {
-                            Text("Groupe NOVA", style = MaterialTheme.typography.labelSmall)
-                            NovaBadge(it)
-                        }
-                    }
                 }
             }
 
@@ -128,19 +122,7 @@ fun ProductCard(
                 }
             }
 
-            // Ingrédients
-            product.ingredientsText?.let {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("Ingrédients", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                Text(
-                    text = it,
-                    fontSize = 12.sp,
-                    maxLines = 3,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            // Bandeau "Meilleure alternative" (inchangé mais stylisé)
+            // Bandeau "Meilleure alternative"
             betterAlternative?.let { alt ->
                 Spacer(modifier = Modifier.height(16.dp))
                 Card(
@@ -192,18 +174,6 @@ fun NutriScoreBadge(grade: String?) {
         else -> Color.Gray to "?"
     }
     BadgeBox(color, label)
-}
-
-@Composable
-fun NovaBadge(group: Int) {
-    val color = when (group) {
-        1 -> Color(0xFF00AA00)
-        2 -> Color(0xFFCCAA00)
-        3 -> Color(0xFFEE8100)
-        4 -> Color(0xFFE63E11)
-        else -> Color.Gray
-    }
-    BadgeBox(color, group.toString())
 }
 
 @Composable
