@@ -65,17 +65,16 @@ fun HistoryScreen(
         }
 
         // Floating Action Button manuel pour éviter l'imbrication de Scaffold
-        LargeFloatingActionButton(
+        ExtendedFloatingActionButton(
             onClick = onAddProduct,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp),
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            shape = CircleShape
-        ) {
-            Icon(Icons.Default.Add, contentDescription = "Ajouter", modifier = Modifier.size(36.dp))
-        }
+            icon = { Icon(Icons.Default.Add, contentDescription = null) },
+            text = { Text("Ajouter un produit") }
+        )
 
         // Overlay pour afficher la fiche produit quand on clique sur un item
         selectedProduct?.let { product ->

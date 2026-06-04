@@ -8,8 +8,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -25,6 +24,19 @@ fun CameraPreview(
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
     val executor = remember { Executors.newSingleThreadExecutor() }
+
+    // Libérer la caméra et fermer l'executor quand on quitte l'écran
+    DisposableEffect(Unit) {
+        onDispose {
+            try {
+                val cameraProvider = cameraProviderFuture.get()
+                cameraProvider.unbindAll()
+            } catch (e: Exception) {
+                Log.e("CameraPreview", "Error unbinding camera", e)
+            }
+            executor.shutdown()
+        }
+    }
 
     AndroidView(
         factory = { ctx ->
