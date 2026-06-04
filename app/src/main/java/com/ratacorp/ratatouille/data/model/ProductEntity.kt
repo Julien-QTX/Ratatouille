@@ -41,9 +41,10 @@ fun ProductEntity.toDomainProduct(): Product {
             salt = salt
         ),
         isFavorite = isFavorite,
-        isOffline = true
+        isOffline = false // Par défaut, on ne considère pas comme hors-ligne
     )
 }
+
 
 fun Product.toEntity(scanDate: Long = System.currentTimeMillis()): ProductEntity {
     return ProductEntity(

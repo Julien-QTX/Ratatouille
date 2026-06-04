@@ -13,29 +13,36 @@ class ProductRepository(
     private val productDao: ProductDao
 ) {
     suspend fun getProduct(barcode: String): Result<Product> {
+        val localProduct = productDao.getProductByBarcode(barcode)
+        
         return try {
-            // 1. Vérifier en local
-            val localProduct = productDao.getProductByBarcode(barcode)
-            if (localProduct != null) {
-                // Mettre à jour la date de scan pour le faire remonter en tête de liste
-                productDao.updateScanDate(barcode, System.currentTimeMillis())
-                return Result.success(localProduct.toDomainProduct())
-            }
-
-            // 2. Si non trouvé en local, télécharger depuis l'API
+            // 1. Tenter de récupérer les données fraîches depuis l'API
             val response = apiService.getProduct(barcode)
             if (response.status == 1 && response.product != null) {
                 val product = response.product
-                // 3. Sauvegarder en local pour la prochaine fois
+                // Sauvegarder/Mettre à jour en local
                 productDao.insertProduct(product.toEntity())
                 Result.success(product)
+            } else if (localProduct != null) {
+                // Pas trouvé sur l'API mais présent en local (ex: produit supprimé de OFF mais gardé en historique)
+                Result.success(localProduct.toDomainProduct())
             } else {
                 Result.failure(Exception(response.statusVerbose ?: "Produit introuvable"))
             }
-        } catch (e: java.net.UnknownHostException) {
-            Result.failure(Exception("Mode hors-ligne : Ce produit n'est pas dans votre historique et nécessite une connexion internet pour être scanné."))
         } catch (e: Exception) {
-            Result.failure(e)
+            // 2. En cas d'erreur (réseau coupé, etc.)
+            if (localProduct != null) {
+                // On a le produit en local ! On le renvoie en le marquant explicitement "Offline"
+                productDao.updateScanDate(barcode, System.currentTimeMillis())
+                Result.success(localProduct.toDomainProduct().copy(isOffline = true))
+            } else {
+                // Pas en local et erreur réseau -> Message spécifique
+                if (e is java.net.UnknownHostException) {
+                    Result.failure(Exception("Mode hors-ligne : Ce produit n'est pas dans votre historique et nécessite une connexion internet pour être scanné."))
+                } else {
+                    Result.failure(e)
+                }
+            }
         }
     }
 
