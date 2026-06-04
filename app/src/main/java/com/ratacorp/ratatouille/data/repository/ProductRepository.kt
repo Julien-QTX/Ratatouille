@@ -32,6 +32,8 @@ class ProductRepository(
             } else {
                 Result.failure(Exception(response.statusVerbose ?: "Produit introuvable"))
             }
+        } catch (e: java.net.UnknownHostException) {
+            Result.failure(Exception("Mode hors-ligne : Ce produit n'est pas dans votre historique et nécessite une connexion internet pour être scanné."))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -77,6 +79,12 @@ class ProductRepository(
     }
 
     suspend fun deleteProduct(product: Product) {
-        productDao.deleteProduct(product.toEntity())
+        if (product.isFavorite) {
+            // S'il est en favori, on le retire juste de l'historique en mettant la date de scan à 0
+            productDao.updateScanDate(product.code, 0L)
+        } else {
+            // Sinon, on le supprime complètement de la base
+            productDao.deleteProduct(product.toEntity())
+        }
     }
 }

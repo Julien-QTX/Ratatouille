@@ -9,7 +9,7 @@ interface ProductDao {
     @Query("SELECT * FROM products WHERE code = :barcode")
     suspend fun getProductByBarcode(barcode: String): ProductEntity?
 
-    @Query("SELECT * FROM products ORDER BY scanDate DESC")
+    @Query("SELECT * FROM products WHERE scanDate > 0 ORDER BY scanDate DESC")
     fun getAllProducts(): Flow<List<ProductEntity>>
 
     @Query("SELECT * FROM products WHERE isFavorite = 1 ORDER BY favoriteDate DESC")

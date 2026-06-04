@@ -24,7 +24,8 @@ fun ProductEntity.toDomainProduct(): Product {
         nutritionGrades = nutritionGrades,
         imageUrl = imageUrl,
         categoriesTags = categoriesTags?.split(","),
-        isFavorite = isFavorite
+        isFavorite = isFavorite,
+        isOffline = true // Indique que le produit vient du cache local
     )
 }
 

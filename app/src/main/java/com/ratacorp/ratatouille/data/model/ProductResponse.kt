@@ -18,7 +18,8 @@ data class Product(
     @Json(name = "nutrition_grades") val nutritionGrades: String?,
     @Json(name = "image_url") val imageUrl: String?,
     @Json(name = "categories_tags") val categoriesTags: List<String>?,
-    val isFavorite: Boolean = false
+    val isFavorite: Boolean = false,
+    val isOffline: Boolean = false
 )
 
 @JsonClass(generateAdapter = true)
