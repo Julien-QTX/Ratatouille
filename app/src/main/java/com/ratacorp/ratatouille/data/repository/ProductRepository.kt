@@ -27,7 +27,7 @@ class ProductRepository(
                 // Pas trouvé sur l'API mais présent en local (ex: produit supprimé de OFF mais gardé en historique)
                 Result.success(localProduct.toDomainProduct())
             } else {
-                Result.failure(Exception(response.statusVerbose ?: "Produit introuvable"))
+                Result.failure(Exception("Produit non trouvé"))
             }
         } catch (e: Exception) {
             // 2. En cas d'erreur (réseau coupé, etc.)
@@ -36,12 +36,15 @@ class ProductRepository(
                 productDao.updateScanDate(barcode, System.currentTimeMillis())
                 Result.success(localProduct.toDomainProduct().copy(isOffline = true))
             } else {
-                // Pas en local et erreur réseau -> Message spécifique
-                if (e is java.net.UnknownHostException) {
-                    Result.failure(Exception("Mode hors-ligne : Ce produit n'est pas dans votre historique et nécessite une connexion internet pour être scanné."))
+                // Gestion explicite des erreurs HTTP 404 via les exceptions Retrofit ou le contenu de l'erreur
+                val errorMessage = if (e is retrofit2.HttpException && e.code() == 404) {
+                    "Produit non trouvé"
+                } else if (e is java.net.UnknownHostException) {
+                    "Mode hors-ligne : Ce produit n'est pas dans votre historique et nécessite une connexion internet pour être scanné."
                 } else {
-                    Result.failure(e)
+                    e.message ?: "Une erreur est survenue"
                 }
+                Result.failure(Exception(errorMessage))
             }
         }
     }
