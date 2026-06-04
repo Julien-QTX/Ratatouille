@@ -37,8 +37,12 @@ class ProductRepository(
                 Result.success(localProduct.toDomainProduct().copy(isOffline = true))
             } else {
                 // Gestion explicite des erreurs HTTP 404 via les exceptions Retrofit ou le contenu de l'erreur
-                val errorMessage = if (e is retrofit2.HttpException && e.code() == 404) {
-                    "Produit non trouvé"
+                val errorMessage = if (e is retrofit2.HttpException) {
+                    when (e.code()) {
+                        404 -> "Produit non trouvé"
+                        429 -> "Trop de requêtes : Veuillez patienter un instant avant de scanner à nouveau."
+                        else -> e.message ?: "Une erreur serveur est survenue (${e.code()})"
+                    }
                 } else if (e is java.net.UnknownHostException) {
                     "Mode hors-ligne : Ce produit n'est pas dans votre historique et nécessite une connexion internet pour être scanné."
                 } else {

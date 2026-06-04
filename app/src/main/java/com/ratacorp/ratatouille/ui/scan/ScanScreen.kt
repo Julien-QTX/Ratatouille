@@ -54,8 +54,9 @@ fun ScanScreen(viewModel: ScanViewModel) {
     Box(modifier = Modifier.fillMaxSize()) {
         if (hasCameraPermission && !showManualEntry) {
             CameraPreview(onBarcodeDetected = { barcode ->
-                // Éviter les scans multiples trop rapides
-                if (uiState !is ScanState.Loading && uiState !is ScanState.Success) {
+                // On ne scanne que si on est en état IDLE
+                // Cela évite de rescanner en boucle en cas d'erreur (ex: 429) ou de chargement
+                if (uiState is ScanState.Idle) {
                     viewModel.scanProduct(barcode)
                 }
             })
