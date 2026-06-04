@@ -7,6 +7,9 @@ import com.ratacorp.ratatouille.data.model.toEntity
 import com.ratacorp.ratatouille.data.remote.FoodApiService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 
 class ProductRepository(
     private val apiService: FoodApiService,
@@ -24,7 +27,7 @@ class ProductRepository(
                 productDao.insertProduct(product.toEntity())
                 Result.success(product)
             } else if (localProduct != null) {
-                // Pas trouvé sur l'API mais présent en local (ex: produit supprimé de OFF mais gardé en historique)
+                // Pas trouvé sur l'API mais présent en local
                 Result.success(localProduct.toDomainProduct())
             } else {
                 Result.failure(Exception("Produit non trouvé"))
@@ -36,7 +39,7 @@ class ProductRepository(
                 productDao.updateScanDate(barcode, System.currentTimeMillis())
                 Result.success(localProduct.toDomainProduct().copy(isOffline = true))
             } else {
-                // Gestion explicite des erreurs HTTP 404 via les exceptions Retrofit ou le contenu de l'erreur
+                // Gestion explicite des erreurs HTTP
                 val errorMessage = if (e is retrofit2.HttpException) {
                     when (e.code()) {
                         404 -> "Produit non trouvé"
@@ -74,7 +77,6 @@ class ProductRepository(
             val response = apiService.getProduct(barcode)
             if (response.status == 1 && response.product != null) {
                 val product = response.product
-                // On récupère le statut favori actuel pour ne pas le perdre lors de l'insert
                 val currentLocal = productDao.getProductByBarcode(barcode)
                 val isFavorite = currentLocal?.isFavorite ?: false
                 val favoriteDate = currentLocal?.favoriteDate
@@ -105,7 +107,6 @@ class ProductRepository(
 
         val category = product.categoriesTags?.lastOrNull() ?: return null
 
-        // On cherche d'abord un produit noté A, puis B, puis C
         val gradesToTry = listOf("a", "b", "c")
         for (grade in gradesToTry) {
             try {
@@ -114,22 +115,16 @@ class ProductRepository(
                     return response.products.first()
                 }
             } catch (e: Exception) {
-                // Continuer vers le grade suivant en cas d'erreur réseau
+                // Continuer
             }
         }
         return null
     }
 
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
-...
     suspend fun deleteProduct(product: Product) {
         if (product.isFavorite) {
-            // S'il est en favori, on le retire juste de l'historique en mettant la date de scan à 0
             productDao.updateScanDate(product.code, 0L)
         } else {
-            // Sinon, on le supprime complètement de la base
             productDao.deleteProduct(product.toEntity())
         }
     }
