@@ -9,12 +9,3 @@ data class ProductResponse(
     @Json(name = "status") val status: Int,
     @Json(name = "status_verbose") val statusVerbose: String?
 )
-
-@JsonClass(generateAdapter = true)
-data class Product(
-    @Json(name = "code") val code: String,
-    @Json(name = "product_name") val productName: String?,
-    @Json(name = "brands") val brands: String?,
-    @Json(name = "nutrition_grades") val nutritionGrades: String?,
-    @Json(name = "image_url") val imageUrl: String?
-)

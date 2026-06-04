@@ -1,3 +1,4 @@
+// MainActivity.kt
 package com.ratacorp.ratatouille
 
 import android.os.Bundle
@@ -6,96 +7,88 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.QrCodeScanner
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.ratacorp.ratatouille.ui.ViewModelFactory
+import com.ratacorp.ratatouille.di.AppContainer
 import com.ratacorp.ratatouille.ui.history.HistoryScreen
 import com.ratacorp.ratatouille.ui.history.HistoryViewModel
 import com.ratacorp.ratatouille.ui.scan.ScanScreen
 import com.ratacorp.ratatouille.ui.scan.ScanViewModel
 import com.ratacorp.ratatouille.ui.theme.RatatouilleTheme
-
-sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
-    object History : Screen("history", "Historique", Icons.Default.History)
-    object Scan : Screen("scan", "Scanner", Icons.Default.QrCodeScanner)
-    object Favorites : Screen("favorites", "Favoris", Icons.Default.Favorite)
-    object Search : Screen("search", "Recherche", Icons.Default.Search)
-}
-
-val items = listOf(
-    Screen.History,
-    Screen.Scan,
-    Screen.Favorites,
-    Screen.Search
-)
-
 class MainActivity : ComponentActivity() {
+    private lateinit var appContainer: AppContainer
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        val appContainer = (application as RatatouilleApplication).container
-        val viewModelFactory = ViewModelFactory(appContainer.productRepository)
-
         enableEdgeToEdge()
+
+        appContainer = (application as RatatouilleApplication).appContainer
+
         setContent {
             RatatouilleTheme {
-                val navController = rememberNavController()
-                Scaffold(
-                    bottomBar = {
-                        NavigationBar {
-                            val navBackStackEntry by navController.currentBackStackEntryAsState()
-                            val currentDestination = navBackStackEntry?.destination
-                            items.forEach { screen ->
-                                NavigationBarItem(
-                                    icon = { Icon(screen.icon, contentDescription = null) },
-                                    label = { Text(screen.label) },
-                                    selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
-                                    onClick = {
-                                        navController.navigate(screen.route) {
-                                            popUpTo(navController.graph.findStartDestination().id) {
-                                                saveState = true
-                                            }
-                                            launchSingleTop = true
-                                            restoreState = true
-                                        }
-                                    }
-                                )
-                            }
+                RatatouilleApp(appContainer)
+            }
+        }
+    }
+}
+
+@Composable
+fun RatatouilleApp(appContainer: AppContainer) {
+    val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    // ViewModels instanciés une seule fois via remember
+    val scanViewModel = remember {
+        ScanViewModel(appContainer.productRepository)
+    }
+    val historyViewModel = remember {
+        HistoryViewModel(appContainer.productRepository)
+    }
+
+    Scaffold(
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.QrCodeScanner, contentDescription = "Scanner") },
+                    label = { Text("Scanner") },
+                    selected = currentRoute == "scan",
+                    onClick = {
+                        navController.navigate("scan") {
+                            popUpTo("scan") { inclusive = true }
                         }
                     }
-                ) { innerPadding ->
-                    NavHost(
-                        navController = navController,
-                        startDestination = Screen.History.route,
-                        modifier = Modifier.padding(innerPadding)
-                    ) {
-                        composable(Screen.History.route) { HistoryScreen() }
-                        composable(Screen.Scan.route) { 
-                            val scanViewModel: ScanViewModel = viewModel(factory = viewModelFactory)
-                            ScanScreen(scanViewModel) 
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.History, contentDescription = "Historique") },
+                    label = { Text("Historique") },
+                    selected = currentRoute == "history",
+                    onClick = {
+                        navController.navigate("history") {
+                            popUpTo("scan")
                         }
-                        composable(Screen.Favorites.route) { FavoritesScreen() }
-                        composable(Screen.Search.route) { SearchScreen() }
                     }
-                }
+                )
+            }
+        }
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = "scan",
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable("scan") {
+                ScanScreen(viewModel = scanViewModel)
+            }
+            composable("history") {
+                HistoryScreen(viewModel = historyViewModel)
             }
         }
     }
