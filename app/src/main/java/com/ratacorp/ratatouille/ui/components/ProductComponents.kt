@@ -29,11 +29,12 @@ fun ProductCard(
     onClose: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().wrapContentHeight(),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         shape = RoundedCornerShape(16.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+            // Indicateur Hors ligne
             if (product.isOffline) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
@@ -43,28 +44,33 @@ fun ProductCard(
                     Icon(
                         imageVector = Icons.Default.CloudOff,
                         contentDescription = "Hors ligne",
-                        modifier = Modifier.size(16.dp),
+                        modifier = Modifier.size(14.dp),
                         tint = Color.Gray
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "Données hors-ligne",
-                        fontSize = 12.sp,
-                        color = Color.Gray
-                    )
+                    Text(text = "Données hors-ligne", fontSize = 10.sp, color = Color.Gray)
                 }
             }
+
+            // En-tête : Nom, Favoris, Fermer
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Top
             ) {
-                Text(
-                    text = product.productName ?: "Nom inconnu",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f)
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = product.productName ?: "Nom inconnu",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        lineHeight = 24.sp
+                    )
+                    Text(
+                        text = "${product.brands ?: "Marque inconnue"}${if (product.quantity != null) " - ${product.quantity}" else ""}",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                }
                 Row {
                     IconButton(onClick = { onToggleFavorite(product) }) {
                         Icon(
@@ -79,17 +85,10 @@ fun ProductCard(
                 }
             }
 
-            product.brands?.let {
-                Text(
-                    text = it,
-                    fontSize = 16.sp,
-                    color = Color.Gray
-                )
-            }
+            Spacer(modifier = Modifier.height(12.dp))
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            // Image et Scores principaux
+            Row(modifier = Modifier.fillMaxWidth()) {
                 product.imageUrl?.let {
                     Image(
                         painter = rememberAsyncImagePainter(it),
@@ -102,58 +101,83 @@ fun ProductCard(
                     Spacer(modifier = Modifier.width(16.dp))
                 }
 
-                Column {
-                    Text("Nutri-Score", fontWeight = FontWeight.Medium)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    NutriScoreBadge(product.nutritionGrades)
-                }
-            }
-
-            // Bandeau "Meilleure alternative"
-            betterAlternative?.let { alt ->
-                Spacer(modifier = Modifier.height(16.dp))
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Column(modifier = Modifier.padding(8.dp)) {
-                        Text(
-                            text = "Meilleure alternative",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onTertiaryContainer,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            alt.imageUrl?.let {
-                                Image(
-                                    painter = rememberAsyncImagePainter(it),
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(RoundedCornerShape(4.dp)),
-                                    contentScale = ContentScale.Crop
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                            }
-                            Text(
-                                text = alt.productName ?: "Produit inconnu",
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            NutriScoreBadge(alt.nutritionGrades)
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column {
+                        Text("Nutri-Score", style = MaterialTheme.typography.labelSmall)
+                        NutriScoreBadge(product.nutritionGrades)
+                    }
+                    product.novaGroup?.let {
+                        Column {
+                            Text("Groupe NOVA", style = MaterialTheme.typography.labelSmall)
+                            NovaBadge(it)
                         }
                     }
                 }
             }
+
+            // Nutriments (version simplifiée)
+            product.nutriments?.let { nut ->
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Valeurs pour 100g", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    NutrientInfo("Énergie", "${nut.energyKcal?.toInt() ?: "?"} kcal")
+                    NutrientInfo("Graisses", "${nut.fat ?: "?"}g")
+                    NutrientInfo("Sucres", "${nut.sugars ?: "?"}g")
+                    NutrientInfo("Sel", "${nut.salt ?: "?"}g")
+                }
+            }
+
+            // Ingrédients
+            product.ingredientsText?.let {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Ingrédients", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                Text(
+                    text = it,
+                    fontSize = 12.sp,
+                    maxLines = 3,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            // Bandeau "Meilleure alternative" (inchangé mais stylisé)
+            betterAlternative?.let { alt ->
+                Spacer(modifier = Modifier.height(16.dp))
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        alt.imageUrl?.let {
+                            Image(
+                                painter = rememberAsyncImagePainter(it),
+                                contentDescription = null,
+                                modifier = Modifier.size(40.dp).clip(RoundedCornerShape(4.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Meilleure alternative", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onTertiaryContainer)
+                            Text(alt.productName ?: "Inconnu", style = MaterialTheme.typography.bodySmall, maxLines = 1)
+                        }
+                        NutriScoreBadge(alt.nutritionGrades)
+                    }
+                }
+            }
         }
+    }
+}
+
+@Composable
+fun NutrientInfo(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(label, fontSize = 10.sp, color = Color.Gray)
+        Text(value, fontSize = 12.sp, fontWeight = FontWeight.Medium)
     }
 }
 
@@ -167,19 +191,27 @@ fun NutriScoreBadge(grade: String?) {
         "e" -> Color(0xFFE63E11) to "E"
         else -> Color.Gray to "?"
     }
+    BadgeBox(color, label)
+}
 
+@Composable
+fun NovaBadge(group: Int) {
+    val color = when (group) {
+        1 -> Color(0xFF00AA00)
+        2 -> Color(0xFFCCAA00)
+        3 -> Color(0xFFEE8100)
+        4 -> Color(0xFFE63E11)
+        else -> Color.Gray
+    }
+    BadgeBox(color, group.toString())
+}
+
+@Composable
+fun BadgeBox(color: Color, label: String) {
     Box(
-        modifier = Modifier
-            .size(40.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(color),
+        modifier = Modifier.size(36.dp).clip(RoundedCornerShape(8.dp)).background(color),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = label,
-            color = Color.White,
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp
-        )
+        Text(label, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
     }
 }
