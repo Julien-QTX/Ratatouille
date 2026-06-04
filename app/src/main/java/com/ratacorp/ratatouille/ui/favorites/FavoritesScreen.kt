@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -47,7 +50,11 @@ fun FavoritesScreen(viewModel: FavoritesViewModel) {
                     )
                 }
                 items(favorites) { product ->
-                    FavoriteItem(product = product, onClick = { viewModel.selectProduct(product) })
+                    FavoriteItem(
+                        product = product, 
+                        onClick = { viewModel.selectProduct(product) },
+                        onToggleFavorite = { viewModel.toggleFavorite(product) }
+                    )
                 }
             }
         }
@@ -74,7 +81,7 @@ fun FavoritesScreen(viewModel: FavoritesViewModel) {
 }
 
 @Composable
-fun FavoriteItem(product: Product, onClick: () -> Unit) {
+fun FavoriteItem(product: Product, onClick: () -> Unit, onToggleFavorite: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -110,6 +117,16 @@ fun FavoriteItem(product: Product, onClick: () -> Unit) {
                     maxLines = 1
                 )
             }
+            
+            IconButton(onClick = onToggleFavorite) {
+                Icon(
+                    imageVector = if (product.isFavorite) Icons.Default.Star else Icons.Default.StarBorder,
+                    contentDescription = "Favori",
+                    tint = if (product.isFavorite) Color(0xFFFFD700) else Color.Gray
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(8.dp))
             NutriScoreBadge(product.nutritionGrades)
         }
     }
