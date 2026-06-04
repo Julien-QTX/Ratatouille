@@ -58,6 +58,34 @@ class ProductRepository(
         }
     }
 
+    suspend fun getAllFavoritesList(): List<Product> {
+        return productDao.getFavoritesList().map { it.toDomainProduct() }
+    }
+
+    suspend fun refreshProductData(barcode: String): Result<Product> {
+        return try {
+            val response = apiService.getProduct(barcode)
+            if (response.status == 1 && response.product != null) {
+                val product = response.product
+                // On récupère le statut favori actuel pour ne pas le perdre lors de l'insert
+                val currentLocal = productDao.getProductByBarcode(barcode)
+                val isFavorite = currentLocal?.isFavorite ?: false
+                val favoriteDate = currentLocal?.favoriteDate
+                val scanDate = currentLocal?.scanDate ?: System.currentTimeMillis()
+
+                productDao.insertProduct(product.toEntity(scanDate).copy(
+                    isFavorite = isFavorite,
+                    favoriteDate = favoriteDate
+                ))
+                Result.success(product)
+            } else {
+                Result.failure(Exception("Échec de mise à jour"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun toggleFavorite(product: Product) {
         val newStatus = !product.isFavorite
         val favoriteDate = if (newStatus) System.currentTimeMillis() else null
