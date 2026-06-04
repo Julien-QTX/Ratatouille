@@ -10,11 +10,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -27,6 +23,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.ratacorp.ratatouille.ui.ViewModelFactory
+import com.ratacorp.ratatouille.ui.favorites.FavoritesScreen
+import com.ratacorp.ratatouille.ui.favorites.FavoritesViewModel
 import com.ratacorp.ratatouille.ui.history.HistoryScreen
 import com.ratacorp.ratatouille.ui.history.HistoryViewModel
 import com.ratacorp.ratatouille.ui.scan.ScanScreen
@@ -89,27 +87,22 @@ class MainActivity : ComponentActivity() {
                     ) {
                         composable(Screen.History.route) { 
                             val historyViewModel: HistoryViewModel = viewModel(factory = viewModelFactory)
-                            HistoryScreen(
-                                viewModel = historyViewModel, 
-                                onAddProduct = { navController.navigate(Screen.Scan.route) }
-                            ) 
+                            HistoryScreen(viewModel = historyViewModel) 
                         }
                         composable(Screen.Scan.route) { 
                             val scanViewModel: ScanViewModel = viewModel(factory = viewModelFactory)
                             ScanScreen(scanViewModel) 
                         }
-                        composable(Screen.Favorites.route) { FavoritesScreen() }
+                        composable(Screen.Favorites.route) { 
+                            val favoritesViewModel: FavoritesViewModel = viewModel(factory = viewModelFactory)
+                            FavoritesScreen(favoritesViewModel) 
+                        }
                         composable(Screen.Search.route) { SearchScreen() }
                     }
                 }
             }
         }
     }
-}
-
-@Composable
-fun FavoritesScreen() {
-    Text(text = "Écran Favoris")
 }
 
 @Composable

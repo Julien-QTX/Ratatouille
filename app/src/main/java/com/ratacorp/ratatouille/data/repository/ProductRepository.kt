@@ -18,9 +18,8 @@ class ProductRepository(
             val localProduct = productDao.getProductByBarcode(barcode)
             if (localProduct != null) {
                 // Mettre à jour la date de scan pour le faire remonter en tête de liste
-                val updatedProduct = localProduct.toDomainProduct()
-                productDao.insertProduct(updatedProduct.toEntity())
-                return Result.success(updatedProduct)
+                productDao.updateScanDate(barcode, System.currentTimeMillis())
+                return Result.success(localProduct.toDomainProduct())
             }
 
             // 2. Si non trouvé en local, télécharger depuis l'API
@@ -42,6 +41,18 @@ class ProductRepository(
         return productDao.getAllProducts().map { entities ->
             entities.map { it.toDomainProduct() }
         }
+    }
+
+    fun getAllFavorites(): Flow<List<Product>> {
+        return productDao.getAllFavorites().map { entities ->
+            entities.map { it.toDomainProduct() }
+        }
+    }
+
+    suspend fun toggleFavorite(product: Product) {
+        val newStatus = !product.isFavorite
+        val favoriteDate = if (newStatus) System.currentTimeMillis() else null
+        productDao.updateFavoriteStatus(product.code, newStatus, favoriteDate)
     }
 
     suspend fun getBetterAlternative(product: Product): Product? {

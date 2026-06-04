@@ -23,17 +23,13 @@ fun CameraPreview(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
+    var cameraProviderByRef by remember { mutableStateOf<ProcessCameraProvider?>(null) }
     val executor = remember { Executors.newSingleThreadExecutor() }
 
-    // Libérer la caméra et fermer l'executor quand on quitte l'écran
+    // Libération propre et non-bloquante
     DisposableEffect(Unit) {
         onDispose {
-            try {
-                val cameraProvider = cameraProviderFuture.get()
-                cameraProvider.unbindAll()
-            } catch (e: Exception) {
-                Log.e("CameraPreview", "Error unbinding camera", e)
-            }
+            cameraProviderByRef?.unbindAll()
             executor.shutdown()
         }
     }
@@ -48,26 +44,27 @@ fun CameraPreview(
             }
 
             cameraProviderFuture.addListener({
-                val cameraProvider = cameraProviderFuture.get()
+                try {
+                    val provider = cameraProviderFuture.get()
+                    cameraProviderByRef = provider
 
-                val preview = Preview.Builder().build().also {
-                    it.setSurfaceProvider(previewView.surfaceProvider)
-                }
-
-                val imageAnalysis = ImageAnalysis.Builder()
-                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                    .build()
-                    .also {
-                        it.setAnalyzer(executor, BarcodeAnalyzer { barcode ->
-                            onBarcodeDetected(barcode)
-                        })
+                    val preview = Preview.Builder().build().also {
+                        it.setSurfaceProvider(previewView.surfaceProvider)
                     }
 
-                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+                    val imageAnalysis = ImageAnalysis.Builder()
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .build()
+                        .also {
+                            it.setAnalyzer(executor, BarcodeAnalyzer { barcode ->
+                                onBarcodeDetected(barcode)
+                            })
+                        }
 
-                try {
-                    cameraProvider.unbindAll()
-                    cameraProvider.bindToLifecycle(
+                    val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+                    provider.unbindAll()
+                    provider.bindToLifecycle(
                         lifecycleOwner,
                         cameraSelector,
                         preview,

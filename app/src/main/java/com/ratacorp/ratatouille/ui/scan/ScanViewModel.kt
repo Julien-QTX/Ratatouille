@@ -45,6 +45,19 @@ class ScanViewModel(private val repository: ProductRepository) : ViewModel() {
         }
     }
 
+    fun toggleFavorite(product: Product) {
+        viewModelScope.launch {
+            repository.toggleFavorite(product)
+            // Mettre à jour l'état UI immédiatement
+            val currentState = _uiState.value
+            if (currentState is ScanState.Success && currentState.product.code == product.code) {
+                _uiState.value = currentState.copy(
+                    product = currentState.product.copy(isFavorite = !product.isFavorite)
+                )
+            }
+        }
+    }
+
     fun resetState() {
         _uiState.value = ScanState.Idle
     }

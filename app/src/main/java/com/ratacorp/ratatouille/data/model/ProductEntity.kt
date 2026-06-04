@@ -11,7 +11,9 @@ data class ProductEntity(
     val nutritionGrades: String?,
     val imageUrl: String?,
     val categoriesTags: String?, // Stocké sous forme de chaîne séparée par des virgules
-    val scanDate: Long
+    val scanDate: Long,
+    val isFavorite: Boolean = false,
+    val favoriteDate: Long? = null
 )
 
 fun ProductEntity.toDomainProduct(): Product {
@@ -21,11 +23,12 @@ fun ProductEntity.toDomainProduct(): Product {
         brands = brands,
         nutritionGrades = nutritionGrades,
         imageUrl = imageUrl,
-        categoriesTags = categoriesTags?.split(",")
+        categoriesTags = categoriesTags?.split(","),
+        isFavorite = isFavorite
     )
 }
 
-fun Product.toEntity(): ProductEntity {
+fun Product.toEntity(scanDate: Long = System.currentTimeMillis()): ProductEntity {
     return ProductEntity(
         code = code,
         productName = productName,
@@ -33,6 +36,8 @@ fun Product.toEntity(): ProductEntity {
         nutritionGrades = nutritionGrades,
         imageUrl = imageUrl,
         categoriesTags = categoriesTags?.joinToString(","),
-        scanDate = System.currentTimeMillis()
+        scanDate = scanDate,
+        isFavorite = isFavorite,
+        favoriteDate = if (isFavorite) System.currentTimeMillis() else null
     )
 }

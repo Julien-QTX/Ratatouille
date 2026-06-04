@@ -1,4 +1,4 @@
-package com.ratacorp.ratatouille.ui.history
+package com.ratacorp.ratatouille.ui.favorites
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -7,9 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,18 +23,15 @@ import com.ratacorp.ratatouille.ui.components.NutriScoreBadge
 import com.ratacorp.ratatouille.ui.components.ProductCard
 
 @Composable
-fun HistoryScreen(
-    viewModel: HistoryViewModel
-) {
-    val history by viewModel.historyState.collectAsState()
+fun FavoritesScreen(viewModel: FavoritesViewModel) {
+    val favorites by viewModel.favoritesState.collectAsState()
     val selectedProduct by viewModel.selectedProduct.collectAsState()
     val alternative by viewModel.alternative.collectAsState()
 
-    // Structure simplifiée pour éviter les erreurs de mesure (NaN) sur Android 15/16
     Box(modifier = Modifier.fillMaxSize()) {
-        if (history.isEmpty()) {
+        if (favorites.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Aucun produit scanné pour le moment")
+                Text("Aucun favori pour le moment")
             }
         } else {
             LazyColumn(
@@ -47,22 +41,18 @@ fun HistoryScreen(
             ) {
                 item {
                     Text(
-                        "Historique des scans",
+                        "Mes Favoris",
                         style = MaterialTheme.typography.headlineMedium,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
                 }
-                items(history) { product ->
-                    HistoryItem(
-                        product = product,
-                        onClick = { viewModel.selectProduct(product) },
-                        onDelete = { viewModel.deleteProduct(product) }
-                    )
+                items(favorites) { product ->
+                    FavoriteItem(product = product, onClick = { viewModel.selectProduct(product) })
                 }
             }
         }
 
-        // Overlay fiche produit
+        // Overlay pour afficher la fiche produit quand on clique sur un item
         selectedProduct?.let { product ->
             Box(
                 modifier = Modifier
@@ -84,7 +74,7 @@ fun HistoryScreen(
 }
 
 @Composable
-fun HistoryItem(product: Product, onClick: () -> Unit, onDelete: () -> Unit) {
+fun FavoriteItem(product: Product, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -121,14 +111,6 @@ fun HistoryItem(product: Product, onClick: () -> Unit, onDelete: () -> Unit) {
                 )
             }
             NutriScoreBadge(product.nutritionGrades)
-            
-            IconButton(onClick = onDelete) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Supprimer",
-                    tint = Color.Gray
-                )
-            }
         }
     }
 }

@@ -3,6 +3,7 @@ package com.ratacorp.ratatouille.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.ratacorp.ratatouille.data.repository.ProductRepository
+import com.ratacorp.ratatouille.ui.favorites.FavoritesViewModel
 import com.ratacorp.ratatouille.ui.history.HistoryViewModel
 import com.ratacorp.ratatouille.ui.scan.ScanViewModel
 
@@ -16,6 +17,10 @@ class ViewModelFactory(private val repository: ProductRepository) : ViewModelPro
             modelClass.isAssignableFrom(HistoryViewModel::class.java) -> {
                 @Suppress("UNCHECKED_CAST")
                 HistoryViewModel(repository) as T
+            }
+            modelClass.isAssignableFrom(FavoritesViewModel::class.java) -> {
+                @Suppress("UNCHECKED_CAST")
+                FavoritesViewModel(repository) as T
             }
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }

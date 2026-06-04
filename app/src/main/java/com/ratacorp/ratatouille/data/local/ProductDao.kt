@@ -12,6 +12,15 @@ interface ProductDao {
     @Query("SELECT * FROM products ORDER BY scanDate DESC")
     fun getAllProducts(): Flow<List<ProductEntity>>
 
+    @Query("SELECT * FROM products WHERE isFavorite = 1 ORDER BY favoriteDate DESC")
+    fun getAllFavorites(): Flow<List<ProductEntity>>
+
+    @Query("UPDATE products SET isFavorite = :isFavorite, favoriteDate = :favoriteDate WHERE code = :barcode")
+    suspend fun updateFavoriteStatus(barcode: String, isFavorite: Boolean, favoriteDate: Long?)
+
+    @Query("UPDATE products SET scanDate = :scanDate WHERE code = :barcode")
+    suspend fun updateScanDate(barcode: String, scanDate: Long)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProduct(product: ProductEntity): Long
 

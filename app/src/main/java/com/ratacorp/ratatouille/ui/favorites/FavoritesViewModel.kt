@@ -1,20 +1,16 @@
-package com.ratacorp.ratatouille.ui.history
+package com.ratacorp.ratatouille.ui.favorites
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ratacorp.ratatouille.data.model.Product
 import com.ratacorp.ratatouille.data.repository.ProductRepository
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class HistoryViewModel(private val repository: ProductRepository) : ViewModel() {
+class FavoritesViewModel(private val repository: ProductRepository) : ViewModel() {
 
-    val historyState: StateFlow<List<Product>> = repository.getAllProducts()
+    val favoritesState: StateFlow<List<Product>> = repository.getAllFavorites()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -41,18 +37,12 @@ class HistoryViewModel(private val repository: ProductRepository) : ViewModel() 
         }
     }
 
-    fun deleteProduct(product: Product) {
-        viewModelScope.launch {
-            repository.deleteProduct(product)
-        }
-    }
-
     fun toggleFavorite(product: Product) {
         viewModelScope.launch {
             repository.toggleFavorite(product)
-            // Mettre à jour l'état local pour rafraîchir l'icône immédiatement si besoin
+            // Si on retire des favoris depuis cet écran, on ferme la fiche
             if (_selectedProduct.value?.code == product.code) {
-                _selectedProduct.value = _selectedProduct.value?.copy(isFavorite = !product.isFavorite)
+                _selectedProduct.value = null
             }
         }
     }
