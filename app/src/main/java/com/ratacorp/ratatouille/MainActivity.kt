@@ -29,6 +29,8 @@ import com.ratacorp.ratatouille.ui.history.HistoryScreen
 import com.ratacorp.ratatouille.ui.history.HistoryViewModel
 import com.ratacorp.ratatouille.ui.scan.ScanScreen
 import com.ratacorp.ratatouille.ui.scan.ScanViewModel
+import com.ratacorp.ratatouille.ui.search.SearchScreen
+import com.ratacorp.ratatouille.ui.search.SearchViewModel
 import com.ratacorp.ratatouille.ui.theme.RatatouilleTheme
 
 sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
@@ -97,15 +99,13 @@ class MainActivity : ComponentActivity() {
                             val favoritesViewModel: FavoritesViewModel = viewModel(factory = viewModelFactory)
                             FavoritesScreen(favoritesViewModel) 
                         }
-                        composable(Screen.Search.route) { SearchScreen() }
+                        composable(Screen.Search.route) { 
+                            val searchViewModel: SearchViewModel = viewModel(factory = viewModelFactory)
+                            SearchScreen(searchViewModel) 
+                        }
                     }
                 }
             }
         }
     }
-}
-
-@Composable
-fun SearchScreen() {
-    Text(text = "Écran Recherche")
 }

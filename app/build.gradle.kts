@@ -70,6 +70,8 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.paging.runtime)
+    implementation(libs.androidx.paging.compose)
     ksp(libs.room.compiler)
 
     // CameraX

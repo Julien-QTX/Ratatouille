@@ -120,6 +120,10 @@ class ProductRepository(
         return null
     }
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+...
     suspend fun deleteProduct(product: Product) {
         if (product.isFavorite) {
             // S'il est en favori, on le retire juste de l'historique en mettant la date de scan à 0
@@ -128,5 +132,15 @@ class ProductRepository(
             // Sinon, on le supprime complètement de la base
             productDao.deleteProduct(product.toEntity())
         }
+    }
+
+    fun searchProductsPaged(category: String): Flow<PagingData<Product>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = { ProductPagingSource(apiService, category) }
+        ).flow
     }
 }

@@ -6,6 +6,7 @@ import com.ratacorp.ratatouille.data.repository.ProductRepository
 import com.ratacorp.ratatouille.ui.favorites.FavoritesViewModel
 import com.ratacorp.ratatouille.ui.history.HistoryViewModel
 import com.ratacorp.ratatouille.ui.scan.ScanViewModel
+import com.ratacorp.ratatouille.ui.search.SearchViewModel
 
 class ViewModelFactory(private val repository: ProductRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -21,6 +22,10 @@ class ViewModelFactory(private val repository: ProductRepository) : ViewModelPro
             modelClass.isAssignableFrom(FavoritesViewModel::class.java) -> {
                 @Suppress("UNCHECKED_CAST")
                 FavoritesViewModel(repository) as T
+            }
+            modelClass.isAssignableFrom(SearchViewModel::class.java) -> {
+                @Suppress("UNCHECKED_CAST")
+                SearchViewModel(repository) as T
             }
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }

@@ -15,10 +15,9 @@ interface FoodApiService {
         @Query("tagtype_0") tagType0: String = "categories",
         @Query("tag_contains_0") tagContains0: String = "contains",
         @Query("tag_0") category: String,
-        @Query("tagtype_1") tagType1: String = "nutrition_grades",
-        @Query("tag_contains_1") tagContains1: String = "contains",
-        @Query("tag_1") targetGrade: String = "a",
-        @Query("page_size") pageSize: Int = 1
+        @Query("sort_by") sortBy: String = "nutriscore_score",
+        @Query("page") page: Int = 1,
+        @Query("page_size") pageSize: Int = 20
     ): SearchResponse
 
     companion object {
