@@ -80,7 +80,7 @@ fun ProductCard(
                     IconButton(onClick = {
                         val sendIntent: Intent = Intent().apply {
                             action = Intent.ACTION_SEND
-                            putExtra(Intent.EXTRA_TEXT, "Regarde ce produit génial : myapp://product/${product.code}")
+                            putExtra(Intent.EXTRA_TEXT, "myapp://product/${product.code}")
                             type = "text/plain"
                         }
                         val shareIntent = Intent.createChooser(sendIntent, null)
