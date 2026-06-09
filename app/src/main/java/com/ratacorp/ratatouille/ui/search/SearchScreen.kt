@@ -59,7 +59,10 @@ fun SearchScreen(viewModel: SearchViewModel) {
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(products.itemCount) { index ->
+                    items(
+                        count = products.itemCount,
+                        key = products.itemKey { it.code }
+                    ) { index ->
                         products[index]?.let { product ->
                             SearchResultItem(product = product, onClick = { viewModel.selectProduct(product) })
                         }
