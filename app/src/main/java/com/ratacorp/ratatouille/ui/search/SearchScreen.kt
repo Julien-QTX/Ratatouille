@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import coil.compose.rememberAsyncImagePainter
 import com.ratacorp.ratatouille.data.model.Product
 import com.ratacorp.ratatouille.ui.components.NutriScoreBadge

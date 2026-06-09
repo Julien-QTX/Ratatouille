@@ -11,10 +11,25 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 
+import android.content.Context
+import androidx.glance.appwidget.updateAll
+import com.ratacorp.ratatouille.widget.RatatouilleWidget
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+
 class ProductRepository(
+    private val context: Context,
     private val apiService: FoodApiService,
     private val productDao: ProductDao
 ) {
+    private fun updateWidget() {
+        GlobalScope.launch {
+            try {
+                RatatouilleWidget().updateAll(context)
+            } catch (e: Exception) {}
+        }
+    }
+
     suspend fun getProduct(barcode: String): Result<Product> {
         val localProduct = productDao.getProductByBarcode(barcode)
         
@@ -25,9 +40,11 @@ class ProductRepository(
                 val product = response.product
                 // Sauvegarder/Mettre à jour en local
                 productDao.insertProduct(product.toEntity())
+                updateWidget()
                 Result.success(product)
             } else if (localProduct != null) {
                 // Pas trouvé sur l'API mais présent en local
+                updateWidget()
                 Result.success(localProduct.toDomainProduct())
             } else {
                 Result.failure(Exception("Produit non trouvé"))
@@ -37,6 +54,7 @@ class ProductRepository(
             if (localProduct != null) {
                 // On a le produit en local ! On le renvoie en le marquant explicitement "Offline"
                 productDao.updateScanDate(barcode, System.currentTimeMillis())
+                updateWidget()
                 Result.success(localProduct.toDomainProduct().copy(isOffline = true))
             } else {
                 // Gestion explicite des erreurs HTTP
@@ -127,6 +145,7 @@ class ProductRepository(
         } else {
             productDao.deleteProduct(product.toEntity())
         }
+        updateWidget()
     }
 
     fun searchProductsPaged(category: String): Flow<PagingData<Product>> {

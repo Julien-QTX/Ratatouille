@@ -19,11 +19,17 @@ class ProductPagingSource(
                 pageSize = params.loadSize
             )
             val products = response.products
+            val totalProducts = response.count
+            val pageSize = params.loadSize
+            
+            // Calculer s'il y a une page suivante
+            // totalProducts / pageSize (arrondi au supérieur) donne le nombre total de pages
+            val hasNextPage = (position * pageSize) < totalProducts
 
             LoadResult.Page(
                 data = products,
                 prevKey = if (position == 1) null else position - 1,
-                nextKey = if (products.isEmpty()) null else position + 1
+                nextKey = if (hasNextPage && products.isNotEmpty()) position + 1 else null
             )
         } catch (exception: Exception) {
             LoadResult.Error(exception)

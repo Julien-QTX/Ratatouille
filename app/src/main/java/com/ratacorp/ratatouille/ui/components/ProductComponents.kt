@@ -21,6 +21,10 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.icons.filled.CloudOff
 
+import android.content.Intent
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material.icons.filled.Share
+
 @Composable
 fun ProductCard(
     product: Product, 
@@ -28,6 +32,7 @@ fun ProductCard(
     onToggleFavorite: (Product) -> Unit,
     onClose: () -> Unit
 ) {
+    val context = LocalContext.current
     Card(
         modifier = Modifier.fillMaxWidth().wrapContentHeight(),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
@@ -72,6 +77,17 @@ fun ProductCard(
                     )
                 }
                 Row {
+                    IconButton(onClick = {
+                        val sendIntent: Intent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(Intent.EXTRA_TEXT, "Regarde ce produit génial : myapp://product/${product.code}")
+                            type = "text/plain"
+                        }
+                        val shareIntent = Intent.createChooser(sendIntent, null)
+                        context.startActivity(shareIntent)
+                    }) {
+                        Icon(Icons.Default.Share, contentDescription = "Partager")
+                    }
                     IconButton(onClick = { onToggleFavorite(product) }) {
                         Icon(
                             imageVector = if (product.isFavorite) Icons.Default.Star else Icons.Default.StarBorder,

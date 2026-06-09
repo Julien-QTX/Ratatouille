@@ -91,8 +91,19 @@ class MainActivity : ComponentActivity() {
                             val historyViewModel: HistoryViewModel = viewModel(factory = viewModelFactory)
                             HistoryScreen(viewModel = historyViewModel) 
                         }
-                        composable(Screen.Scan.route) { 
+                        composable(
+                            route = Screen.Scan.route + "?barcode={barcode}",
+                            deepLinks = listOf(androidx.navigation.navDeepLink { uriPattern = "myapp://product/{barcode}" })
+                        ) { backStackEntry -> 
                             val scanViewModel: ScanViewModel = viewModel(factory = viewModelFactory)
+                            val barcode = backStackEntry.arguments?.getString("barcode")
+                            
+                            LaunchedEffect(barcode) {
+                                if (barcode != null) {
+                                    scanViewModel.scanProduct(barcode)
+                                }
+                            }
+                            
                             ScanScreen(scanViewModel) 
                         }
                         composable(Screen.Favorites.route) { 

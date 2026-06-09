@@ -25,6 +25,6 @@ class AppContainer(private val context: Context) {
     }
 
     val productRepository: ProductRepository by lazy {
-        ProductRepository(foodApiService, database.productDao())
+        ProductRepository(context, foodApiService, database.productDao())
     }
 }
